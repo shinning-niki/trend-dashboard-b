@@ -1,0 +1,57 @@
+name: Update Trend Dashboard B
+
+on:
+  schedule:
+    # UTC 08:00 = Beijing 16:00 (每日下午4点)
+    - cron: '0 8 * * *'
+  # 允许手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: dashboard-b-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Fetch dashboard data
+        env:
+          TREND_API_KEY: ${{ secrets.TREND_API_KEY }}
+        run: python dashboard/fetch_dashboard_data.py
+
+      - name: Build dashboard
+        run: python dashboard/build_dashboard.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Report
+        if: always()
+        run: |
+          echo "## Dashboard B Update Report" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat dashboard/meta.json)" >> $GITHUB_STEP_SUMMARY
+          if [ -f dashboard/dist/index.html ]; then
+            echo "Build OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Build FAILED" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

@@ -1,0 +1,32 @@
+{
+  "apiKey": "",
+  "held": [303317, 707978, 305342, 304843, 306583, 305863, 304310, 307094, 303468, 338721],
+  "heldNotes": {
+    "338721": "代码885611(阿里巴巴概念)精确检索无结果，采用趋势动物『阿里概念』组合替代，成分口径待确认",
+    "_missing": ["隆22转债(113053)：趋势动物接口未收录该可转债，无法监测，看板中标注数据缺失"]
+  },
+  "watch": [],
+  "boardsDaily": [622466, 708074, 452225],
+  "boardNames": {"622466": "温转热(A股)", "708074": "右侧个股(A股)", "452225": "近期历史新高(A股)"},
+  "preFilterFields": ["trendTemperaturePrev", "trendTemperatureCurr", "trendStrengthLocalCurr", "trendPhaseCurr"],
+  "poolFields": ["priceIndex", "return1d", "return1w", "return1m", "marketCap", "amount1d", "isTrendRightSide", "trendTemperatureCurr", "trendTemperaturePrev", "trendPhaseCurr", "trendStrengthLocalCurr", "daysSinceTrendEntry", "tickerLabels", "stopwinFlagByDangerSignal", "stopwinFlagByBoilingTemperature"],
+  "candidateFields": ["industryTrendTemperatureCurr", "marketCap", "amount1d", "priceIndex", "isTrendRightSide", "stopwinFlagByDangerSignal"],
+  "filters": {
+    "strengthMin": 95,
+    "industryTempAllowed": ["温", "热", "沸"],
+    "marketCapMin": 100,
+    "amount1dMin": 2,
+    "priceMax": 500,
+    "phases": ["清明", "谷雨", "立夏", "小满", "芒种", "夏至"],
+    "excludeST": true,
+    "excludeBJ": true
+  },
+  "freshness": {
+    "asset": "A股",
+    "waitWindowStart": "15:50",
+    "waitDeadline": "16:40",
+    "retryIntervalSec": 300
+  },
+  "disciplineVersion": "B1.0",
+  "note": "看板B（A股自选）。apiKey 由环境变量 TREND_API_KEY 注入（GitHub Actions Secret），本地运行时回退到 config.json（仓库中必须留空）。"
+}

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+dashboard/data/
+dashboard/dist/
+dashboard/meta.json
+.DS_Store
