@@ -18,7 +18,7 @@ TEMP_COLOR = {"沸": "#ff2e4d", "热": "#ff7a45", "温": "#ffa940", "平": "#8a8
               "凉": "#40a9ff", "寒": "#2f81f7", "冻": "#a371f7"}
 POS_META = {"清仓": ("#ff4d4f", "pos-clear"), "全仓": ("#3fb950", "pos-full"),
             "半仓（止盈）": ("#d29922", "pos-half")}
-BASE_SIGNAL = {"hold": ("继续持有", "#2f81f7"), "watch": ("观望", "#8a8f98"),
+BASE_SIGNAL = {"hold": ("继续持有", "#2f81f7"), "watch": ("观望", "#2f81f7"),
                "avoid": ("回避", "#6e7681")}
 
 
@@ -91,7 +91,7 @@ def candidate_check(r):
     return (len(fails) == 0), fails
 
 
-def card(r, sig_label, sig_color, note, pos=None, pos_note=None, src=None, extra_note=None):
+def card(r, sig_label, sig_color, note, pos=None, pos_note=None, src=None):
     temp = r.get("trendTemperatureCurr") or ""
     prev = r.get("trendTemperaturePrev") or ""
     tc = TEMP_COLOR.get(temp, "#8a8f98")
@@ -116,8 +116,6 @@ def card(r, sig_label, sig_color, note, pos=None, pos_note=None, src=None, extra
         labels_html = "".join('<span class="tag">%s</span>' % esc(t) for t in tags)
     if r.get("stopwinFlagByDangerSignal"):
         labels_html += '<span class="tag danger">危险信号</span>'
-    if extra_note:
-        labels_html += '<span class="tag warn">%s</span>' % esc(extra_note)
     strength = r.get("trendStrengthLocalCurr")
     s_html = ""
     if strength is not None:
@@ -145,16 +143,6 @@ def card(r, sig_label, sig_color, note, pos=None, pos_note=None, src=None, extra
                     sig_color, esc(sig_label), esc(pos_note or note))
 
 
-def missing_card(text):
-    return """
-      <div class="card" style="border-left-color:#6e7681">
-        <div class="crow1"><span class="name">%s</span><span class="asset">数据缺失</span></div>
-        <div class="crow4" style="border-top:none;margin-top:6px;padding-top:0">
-          <div class="note">趋势动物接口未收录该品种，无法监测（接口事实：searchTicker 检索无结果）。请人工跟踪或在纪律中明确处理方式。</div>
-        </div>
-      </div>""" % esc(text.split("：")[0])
-
-
 def section(title, color, cards_html, extra=""):
     if not cards_html:
         return ""
@@ -171,7 +159,6 @@ def main():
     as_of = payload.get("asOfDate", "—")
     stale = payload.get("staleData")
     held_ids = payload.get("heldIds", CFG["held"])
-    held_notes = payload.get("heldNotes", CFG.get("heldNotes", {}))
     pools = payload.get("pools", [])
     cands = payload.get("candidates", [])
     sources = payload.get("sources", {})
@@ -197,16 +184,13 @@ def main():
             full_list.append(r.get("tickerName"))
         elif pos == "半仓（止盈）":
             half_list.append(r.get("tickerName"))
-        extra = held_notes.get(str(r.get("tmId")))
         if pos:
             label, color = pos, POS_META[pos][0]
-            cards.append(card(r, label, color, pnote, pos, pnote, extra_note=extra))
+            cards.append(card(r, label, color, pnote, pos, pnote))
         else:
             sig, note = base_signal(r)
             label, color = BASE_SIGNAL[sig]
-            cards.append(card(r, label, color, note, extra_note=extra))
-    for m in held_notes.get("_missing", []):
-        cards.append(missing_card(m))
+            cards.append(card(r, label, color, note))
     held_html = "\n".join(cards)
 
     # ---- 推荐模块：九条件筛选
@@ -248,7 +232,7 @@ def main():
     n_right = sum(1 for r in held_rows if r.get("isTrendRightSide"))
 
     sections = (
-        section("📌 我的持仓（%d）" % (len(held_rows) + len(held_notes.get("_missing", []))), "#e6edf3", held_html) +
+        section("📌 我的自选（%d）" % len(held_rows), "#e6edf3", held_html) +
         section("✨ 今日推荐关注（温转热/右侧个股/历史新高·九条件筛选，入选 %d/%d）" % (len(picks), len(cands)),
                 "#3fb950", pick_html, "") +
         reject_summary
@@ -262,9 +246,7 @@ def main():
         .replace("%%N_HELD%%", str(len(held_rows))) \
         .replace("%%N_PICKS%%", str(len(picks))) \
         .replace("%%N_CANDS%%", str(len(cands))) \
-        .replace("%%SECTIONS%%", sections) \
-        .replace("%%COST%%", esc(str(cost))) \
-        .replace("%%BALANCE%%", esc(str(balance)))
+        .replace("%%SECTIONS%%", sections)
 
     out = DIST_DIR / "index.html"
     out.write_text(html_doc, encoding="utf-8")
@@ -278,7 +260,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
-<title>趋势看板B · %%AS_OF%%</title>
+<title>A股趋势日报 · %%AS_OF%%</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:#0d1117; color:#e6edf3; font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
@@ -332,7 +314,7 @@ TEMPLATE = """<!DOCTYPE html>
 <body>
 <div class="wrap">
   <header>
-    <h1>📈 趋势看板 B · A股自选</h1>
+    <h1>📈 A股趋势日报</h1>
     <div class="hsub">数据日期 %%AS_OF%% · 生成于 %%GENERATED_AT%% · 纪律 %%DISC%% · 每日16:00更新</div>
   </header>
 
@@ -342,10 +324,8 @@ TEMPLATE = """<!DOCTYPE html>
   </section>
 
   <div class="stats">
-    <div class="stat"><b>%%N_RIGHT%%/%%N_HELD%%</b><span>持仓右侧</span></div>
+    <div class="stat"><b>%%N_RIGHT%%/%%N_HELD%%</b><span>自选右侧</span></div>
     <div class="stat"><b>%%N_PICKS%%/%%N_CANDS%%</b><span>推荐入选</span></div>
-    <div class="stat"><b>¥%%COST%%</b><span>本次取数费</span></div>
-    <div class="stat"><b>¥%%BALANCE%%</b><span>账户余额</span></div>
   </div>
 
   %%SECTIONS%%
