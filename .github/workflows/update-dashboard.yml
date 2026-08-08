@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -43,6 +43,26 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Push dist to netlify branch
+        run: |
+          # Save built file before switching branches
+          cp dashboard/dist/index.html /tmp/index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Switch to or create netlify branch
+          git fetch origin netlify 2>/dev/null || true
+          if git rev-parse --verify origin/netlify >/dev/null 2>&1; then
+            git checkout -b netlify origin/netlify
+          else
+            git checkout --orphan netlify
+          fi
+          # Clean branch and deploy single file
+          git rm -rf . 2>/dev/null || true
+          cp /tmp/index.html .
+          git add index.html
+          git commit -m "deploy: $(date -u +%Y-%m-%d)" || echo "nothing to commit"
+          git push origin netlify --force
 
       - name: Report
         if: always()
