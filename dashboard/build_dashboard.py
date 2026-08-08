@@ -129,7 +129,7 @@ def card(r, sig_label, sig_color, note, pos=None, pos_note=None, src=None):
     price_html = ("%.3f" % price).rstrip("0").rstrip(".") if isinstance(price, (int, float)) else "—"
     sym = r.get("tickerSymbol") or ""
     return """
-      <div class="card" style="border-left-color:%s">
+      <div class="card" style="border-color:%s">
         <div class="crow1"><span class="name">%s</span><span class="asset">%s %s</span></div>
         <div class="crow2"><span class="price">%s</span>
           <span class="rets">日 %s · 周 %s · 月 %s</span>%s</div>
@@ -283,11 +283,11 @@ TEMPLATE = """<!DOCTYPE html>
   .stat b { display:block; font-size:17px; }
   .stat span { font-size:11px; color:#8b949e; }
   .ghead { font-size:14.5px; font-weight:700; margin:20px 2px 9px; letter-spacing:1px; }
-  .card { background:#161b22; border:1px solid #262b33; border-left:3px solid #444;
-          border-radius:12px; padding:12px 13px; margin-bottom:9px; }
-  .crow1 { display:flex; justify-content:space-between; align-items:baseline; }
-  .name { font-size:16px; font-weight:600; }
-  .asset { font-size:11px; color:#8b949e; }
+  .card { background:#161b22; border:1.5px solid #3a4150; border-radius:12px;
+          padding:14px 15px 13px; margin-bottom:11px; }
+  .crow1 { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .name { font-size:22px; font-weight:700; letter-spacing:.5px; color:#f0f6fc; }
+  .asset { font-size:12px; color:#8b949e; flex-shrink:0; }
   .crow2 { margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .price { font-size:15px; font-weight:600; color:#c9d1d9; font-variant-numeric:tabular-nums; }
   .rets { font-size:12.5px; font-variant-numeric:tabular-nums; }
