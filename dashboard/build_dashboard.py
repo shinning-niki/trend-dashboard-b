@@ -19,7 +19,7 @@ TEMP_COLOR = {"沸": "#ff2e4d", "热": "#ff7a45", "温": "#ffa940", "平": "#8a8
 POS_META = {"清仓": ("#ff4d4f", "pos-clear"), "全仓": ("#3fb950", "pos-full"),
             "半仓（止盈）": ("#d29922", "pos-half")}
 BASE_SIGNAL = {"hold": ("继续持有", "#2f81f7"), "watch": ("观望", "#2f81f7"),
-               "avoid": ("回避", "#6e7681")}
+               "avoid": ("回避", "#2f81f7")}
 
 
 def esc(s):
