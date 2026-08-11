@@ -2,8 +2,8 @@ name: Update Trend Dashboard B
 
 on:
   schedule:
-    # UTC 08:00 = Beijing 16:00 (每日下午4点)
-    - cron: '0 8 * * *'
+    # UTC 09:00 = Beijing 17:00 (A股数据16:24更新，17:00确保已就绪)
+    - cron: '0 9 * * *'
   # 允许手动触发
   workflow_dispatch:
 

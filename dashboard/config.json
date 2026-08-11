@@ -24,7 +24,7 @@
   "freshness": {
     "asset": "A股",
     "waitWindowStart": "15:50",
-    "waitDeadline": "16:40",
+    "waitDeadline": "17:30",
     "retryIntervalSec": 300
   },
   "disciplineVersion": "B1.0",
