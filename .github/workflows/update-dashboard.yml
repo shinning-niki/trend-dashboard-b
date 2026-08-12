@@ -4,6 +4,8 @@ on:
   schedule:
     # UTC 10:30 = Beijing 18:30 (A股数据16:24更新，getUpdateStatus可能提前报fresh，留2h+缓冲)
     - cron: '30 10 * * *'
+    # UTC 14:00 = Beijing 22:00 (晚间兜底重试，应对API数据延迟更新)
+    - cron: '0 14 * * *'
   # 允许手动触发
   workflow_dispatch:
 

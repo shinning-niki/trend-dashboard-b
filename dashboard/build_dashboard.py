@@ -178,6 +178,11 @@ def main():
     cards = []
     for r in sorted(held_rows, key=lambda x: -(x.get("trendStrengthLocalCurr") or -1)):
         pos, pnote = position_advice(r)
+        # 单品种数据日期滞后（如停牌）时在卡片上标注，不误标整个看板
+        ra = r.get("asOfDate")
+        tail = ""
+        if ra and as_of not in ("—", "unknown") and ra < as_of:
+            tail = " ⚠️ 该品种数据停留在%s（市场已至%s），或处于停牌等非交易状态（接口未提供原因）。" % (ra, as_of)
         if pos == "清仓":
             clear_list.append(r.get("tickerName"))
         elif pos == "全仓":
@@ -186,11 +191,11 @@ def main():
             half_list.append(r.get("tickerName"))
         if pos:
             label, color = pos, POS_META[pos][0]
-            cards.append(card(r, label, color, pnote, pos, pnote))
+            cards.append(card(r, label, color, pnote + tail, pos, pnote + tail))
         else:
             sig, note = base_signal(r)
             label, color = BASE_SIGNAL[sig]
-            cards.append(card(r, label, color, note))
+            cards.append(card(r, label, color, note + tail))
     held_html = "\n".join(cards)
 
     # ---- 推荐模块：九条件筛选
@@ -319,7 +324,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="wrap">
   <header>
     <h1>📈 A股趋势日报</h1>
-    <div class="hsub">数据日期 %%AS_OF%% · 生成于 %%GENERATED_AT%% · 纪律 %%DISC%% · 每日16:00更新</div>
+    <div class="hsub">数据日期 %%AS_OF%% · 生成于 %%GENERATED_AT%% · 纪律 %%DISC%% · 每日18:30更新</div>
   </header>
 
   <section class="advice">

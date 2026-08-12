@@ -143,7 +143,10 @@ def main():
         verify_interval = CFG.get("freshness", {}).get("retryIntervalSec", 300)
         for attempt in range(max_verify + 1):
             pools = snapshot(held, CFG["poolFields"])
-            actual_asof = pools[0].get("asOfDate") if pools else None
+            # 用全池最大 asOfDate 判定新鲜度：个别品种（如停牌）自身日期滞后，
+            # 取 pools[0] 会把停牌品种误当全市场数据日期
+            row_dates = [r.get("asOfDate") for r in pools if r.get("asOfDate")]
+            actual_asof = max(row_dates) if row_dates else None
             if not as_of_status or actual_asof == as_of_status or attempt == max_verify:
                 if actual_asof and as_of_status and actual_asof != as_of_status:
                     print("WARNING: data asOf=%s != freshness asOf=%s after %d retries, using actual"
@@ -170,11 +173,14 @@ def main():
 
     bal1 = balance()
     cand_list = list(candidates.values())
+    # 数据日期标签以 getUpdateStatus 的 A股 asOfDate 为准（个别品种停牌会滞后）
     as_of = as_of_status or "unknown"
-    for src in (pools, cand_list):
-        if src and src[0].get("asOfDate"):
-            as_of = src[0]["asOfDate"]
-            break
+    if as_of == "unknown":
+        for src in (pools, cand_list):
+            dates = [r.get("asOfDate") for r in src if r.get("asOfDate")]
+            if dates:
+                as_of = max(dates)
+                break
 
     out = {"asOfDate": as_of, "updateDt": upd_dt, "staleData": bool(stale),
            "discipline": CFG["disciplineVersion"],
