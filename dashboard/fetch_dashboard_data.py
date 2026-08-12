@@ -134,7 +134,25 @@ def main():
     print("UpdateStatus: A股 asOf=%s updateDt=%s waited=%d stale=%s"
           % (as_of_status, upd_dt, waited, stale))
 
-    pools = snapshot(held, CFG["poolFields"]) if held else []
+    # ---- 持仓快照 + 数据日期校验
+    # getUpdateStatus 可能在实际数据就绪前就报告 fresh
+    # 取到数据后验证 asOfDate 是否匹配 freshness 日期，不匹配则等待重试
+    pools = []
+    if held:
+        max_verify = 3
+        verify_interval = CFG.get("freshness", {}).get("retryIntervalSec", 300)
+        for attempt in range(max_verify + 1):
+            pools = snapshot(held, CFG["poolFields"])
+            actual_asof = pools[0].get("asOfDate") if pools else None
+            if not as_of_status or actual_asof == as_of_status or attempt == max_verify:
+                if actual_asof and as_of_status and actual_asof != as_of_status:
+                    print("WARNING: data asOf=%s != freshness asOf=%s after %d retries, using actual"
+                          % (actual_asof, as_of_status, max_verify))
+                    stale = True
+                break
+            print("Verify: data asOf=%s != freshness asOf=%s, retry %d/%d in %ds..."
+                  % (actual_asof, as_of_status, attempt + 1, max_verify, verify_interval))
+            time.sleep(verify_interval)
 
     # ---- 候选源：三榜穿透→合并去重→智能快照
     daily_ids, sources = [], {}
