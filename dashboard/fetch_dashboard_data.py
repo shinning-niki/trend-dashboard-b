@@ -132,7 +132,7 @@ def main():
     bal0 = balance()
     as_of_status, upd_dt, waited, stale = wait_fresh()
     print("UpdateStatus: A股 asOf=%s updateDt=%s waited=%d stale=%s"
-          % (as_of_status, upd_dt, waited, stale))
+          % (as_of_status, upd_dt, waited, stale), flush=True)
 
     # ---- 持仓快照 + 数据日期校验
     # getUpdateStatus 可能在实际数据就绪前就报告 fresh
@@ -150,11 +150,11 @@ def main():
             if not as_of_status or actual_asof == as_of_status or attempt == max_verify:
                 if actual_asof and as_of_status and actual_asof != as_of_status:
                     print("WARNING: data asOf=%s != freshness asOf=%s after %d retries, using actual"
-                          % (actual_asof, as_of_status, max_verify))
+                          % (actual_asof, as_of_status, max_verify), flush=True)
                     stale = True
                 break
             print("Verify: data asOf=%s != freshness asOf=%s, retry %d/%d in %ds..."
-                  % (actual_asof, as_of_status, attempt + 1, max_verify, verify_interval))
+                  % (actual_asof, as_of_status, attempt + 1, max_verify, verify_interval), flush=True)
             time.sleep(verify_interval)
 
     # ---- 候选源：三榜穿透→合并去重→智能快照
