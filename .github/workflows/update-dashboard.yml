@@ -47,7 +47,12 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Push dist to netlify branch
+        if: always()
         run: |
+          if [ ! -f dashboard/dist/index.html ]; then
+            echo "No build output, skipping netlify push"
+            exit 0
+          fi
           # Save built file before switching branches
           cp dashboard/dist/index.html /tmp/index.html
           git config user.name "github-actions[bot]"
